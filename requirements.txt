@@ -1,5 +1,7 @@
-streamlit==1.25.0
-transformers==4.45.0
-torch>=2.0.0
-sentencepiece==0.1.99
+streamlit
+transformers
+torch
+sentencepiece
+pillow
+
 
