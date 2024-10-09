@@ -2,10 +2,15 @@ import gc
 import streamlit as st
 from transformers import pipeline
 
-# Load models (Consider lazy loading if memory is a concern)
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-translator_en_to_ar = pipeline("translation_en_to_ar", model="Helsinki-NLP/opus-mt-en-ar")
-translator_en_to_fr = pipeline("translation_en_to_fr", model="Helsinki-NLP/opus-mt-en-fr")
+# Define functions to load models only when needed
+def get_summarizer():
+    return pipeline("summarization", model="facebook/bart-large-cnn")
+
+def get_translator_en_to_ar():
+    return pipeline("translation_en_to_ar", model="Helsinki-NLP/opus-mt-en-ar")
+
+def get_translator_en_to_fr():
+    return pipeline("translation_en_to_fr", model="Helsinki-NLP/opus-mt-en-fr")
 
 # App title
 st.title("Automatic Summarization and Translation")
@@ -24,6 +29,10 @@ if st.button("Summarize Text"):
     if user_input.strip():
         with st.spinner("Processing..."):
             try:
+                # Load models only when needed
+                summarizer = get_summarizer()
+                translator = get_translator_en_to_ar() if language == "Arabic" else get_translator_en_to_fr()
+
                 # Summarize the input text
                 summary = summarizer(user_input, max_length=150, min_length=30, do_sample=False)
                 summarized_text = summary[0]['summary_text']
@@ -31,11 +40,7 @@ if st.button("Summarize Text"):
                 st.write(summarized_text)
 
                 # Translate based on the chosen language
-                if language == "Arabic":
-                    translation = translator_en_to_ar(summarized_text)
-                elif language == "French":
-                    translation = translator_en_to_fr(summarized_text)
-
+                translation = translator(summarized_text)
                 st.subheader(f"Translation to {language}:")
                 st.write(translation[0]['translation_text'])
 
